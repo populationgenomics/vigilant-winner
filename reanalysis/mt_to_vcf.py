@@ -29,7 +29,7 @@ def main(input_mt: str, output_path: str, additional_header: str | None = None):
     init_batch()
 
     matrix = hl.read_matrix_table(input_mt)
-    matrix.drop('meta', 'qual_hists', 'raw_qual_hists', 'gvcf_info')
+    matrix = matrix.drop('meta', 'qual_hists', 'raw_qual_hists', 'gvcf_info')
 
     hl.export_vcf(
         matrix,
