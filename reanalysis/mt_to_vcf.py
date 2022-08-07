@@ -11,7 +11,7 @@ definitions, e.g. 'VQSR' as a Filter field. This argument allows us to
 specify additional lines which are required to make the final output valid
 within the VCF specification
 """
-import sys
+
 from argparse import ArgumentParser
 
 import hail as hl
@@ -29,16 +29,14 @@ def main(input_mt: str, output_path: str, additional_header: str | None = None):
     init_batch()
 
     matrix = hl.read_matrix_table(input_mt)
-    print(matrix.describe())
-    print(output_path, additional_header)
-    sys.exit(1)
+    matrix.drop('meta', 'qual_hists', 'raw_qual_hists', 'gvcf_info')
 
-    # hl.export_vcf(
-    #     matrix,
-    #     output_path,
-    #     append_to_header=additional_header,
-    #     tabix=True,
-    # )
+    hl.export_vcf(
+        matrix,
+        output_path,
+        append_to_header=additional_header,
+        tabix=True,
+    )
 
 
 if __name__ == '__main__':
