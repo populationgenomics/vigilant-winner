@@ -19,3 +19,6 @@ if __name__ == '__main__':
     mt = mt.filter_rows(mt.variant_qc.n_non_ref > 0)
     mt = mt.drop('variant_qc')
     mt.write(output_path('thousand_genomes_subset.mt'))
+
+    # resultant path:
+    # gs://cpg-nagim-test/thousand_genomes_subset/thousand_genomes_subset.mt
