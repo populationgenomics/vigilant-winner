@@ -413,11 +413,11 @@ def main(
             # overwrite the expected annotation output path
             global ANNOTATED_MT  # pylint: disable=W0603
             ANNOTATED_MT = input_path
-
         else:
-            prior_job = mt_to_vcf(
-                batch=batch, input_file=input_path, config=config_dict
-            )
+            if not AnyPath(INPUT_AS_VCF).exists():
+                prior_job = mt_to_vcf(
+                    batch=batch, input_file=input_path, config=config_dict
+                )
             # overwrite input path with file we just created
             input_path = INPUT_AS_VCF
 
