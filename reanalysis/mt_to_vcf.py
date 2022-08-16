@@ -28,11 +28,15 @@ def main(input_mt: str, output_path: str, additional_header: str | None = None):
     """
     init_batch()
 
-    matrix = hl.read_matrix_table(input_mt)
-    matrix = matrix.drop('meta', 'qual_hists', 'raw_qual_hists', 'gvcf_info')
+    mt = hl.read_matrix_table(input_mt)
+    mt = mt.drop('meta', 'qual_hists', 'raw_qual_hists', 'gvcf_info')
+    mt = mt.filter_rows(mt.filters.length() == 0)
+    mt = hl.variant_qc(mt)
+    mt = mt.filter_rows(mt.variant_qc.n_non_ref > 0)
+    mt = mt.drop('variant_qc')
 
     hl.export_vcf(
-        matrix,
+        mt,
         output_path,
         append_to_header=additional_header,
         tabix=True,
