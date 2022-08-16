@@ -76,7 +76,6 @@ def apply_annotations(
         skip_invalid_loci=True,
         force_bgz=True,
     )
-    logger.info(mt.describe())
     logger.info(
         f'Importing VCF {vcf_path}, ' f'adding VEP annotations from {vep_ht_path}'
     )
@@ -102,6 +101,12 @@ def apply_annotations(
     clinvar_ht = hl.read_table(str(clinvar_ht_path))
 
     logger.info('Annotating with seqr-loader fields: round 1')
+    logger.info(mt.describe())
+    mt = hl.variant_qc(mt)
+    mt = mt.annotate_rows(
+        info=mt.info.annotate(AN=mt.variant_qc.AN[1], AF=mt.variant_qc.AF[1])
+    )
+    mt = mt.drop('variant_qc')
     mt = mt.annotate_rows(
         AC=mt.info.AC,
         AF=mt.info.AF[mt.a_index - 1],
