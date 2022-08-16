@@ -76,6 +76,7 @@ def apply_annotations(
         skip_invalid_loci=True,
         force_bgz=True,
     )
+    logger.info(mt.describe())
     logger.info(
         f'Importing VCF {vcf_path}, ' f'adding VEP annotations from {vep_ht_path}'
     )
