@@ -7,7 +7,6 @@ from collections import defaultdict
 from dataclasses import dataclass, is_dataclass
 from enum import Enum
 from itertools import combinations_with_replacement
-from pathlib import Path
 from typing import Any, Union
 
 import json
@@ -52,7 +51,11 @@ def identify_file_type(file_path: str) -> FileTypes | Exception:
     :param file_path:
     :return:
     """
-    pl_filepath = Path(file_path)
+    pl_filepath = AnyPath(file_path)
+
+    assert (
+        pl_filepath.exists()
+    ), f'input file {file_path} does not exist or is not visible from this host'
 
     # pull all extensions (e.g. .vcf.bgz will be split into [.vcf, .bgz]
     extensions = pl_filepath.suffixes
