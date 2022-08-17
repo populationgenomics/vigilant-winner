@@ -104,7 +104,7 @@ def apply_annotations(
     logger.info(mt.describe())
     mt = hl.variant_qc(mt)
     mt = mt.annotate_rows(
-        info=mt.info.annotate(AN=mt.variant_qc.AN[1], AF=mt.variant_qc.AF[1])
+        info=mt.info.annotate(AN=mt.variant_qc.AN, AF=mt.variant_qc.AF[1])
     )
     mt = mt.drop('variant_qc')
     mt = mt.annotate_rows(
