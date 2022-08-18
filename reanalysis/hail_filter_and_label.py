@@ -50,6 +50,9 @@ def filter_matrix_by_ac(
     :param ac_threshold:
     :return: reduced MatrixTable
     """
+    matrix = matrix.annotate_rows(
+        info=matrix.info.annotate(AC=hl.or_else(matrix.info.AC, ONE_INT))
+    )
     return matrix.filter_rows(
         (matrix.info.AC <= 5) | (matrix.info.AC / matrix.info.AN < ac_threshold)
     )
