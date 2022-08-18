@@ -729,10 +729,16 @@ def subselect_mt_to_pedigree(matrix: hl.MatrixTable, pedigree: str) -> hl.Matrix
 
     # full overlap = no filtering
     if common_samples == matrix_samples:
+        logging.info('MatrixTable samples already matches Pedigree')
         return matrix
 
     # reduce to those common samples
     matrix = matrix.filter_cols(hl.literal(common_samples).contains(matrix.s))
+
+    # restrict to at least one call in this population
+    matrix = hl.variant_qc(matrix)
+    matrix = matrix.filter_rows(matrix.variant_qc.n_non_ref > 0)
+    matrix = matrix.drop('variant_qc')
 
     logging.info(f'Remaining MatrixTable columns: {matrix.count_cols()}')
 
@@ -792,12 +798,18 @@ def main(mt: str, panelapp: str, config_path: str, plink: str):
         f'Loaded annotated MT from {mt}, size: {matrix.count_rows()}',
     )
 
+    print(matrix.rows().show(20))
+
     # filter out quality failures
     matrix = filter_on_quality_flags(matrix)
 
     # running global quality filter steps
     matrix = filter_matrix_by_ac(matrix=matrix)
     matrix = filter_to_well_normalised(matrix)
+
+    # die if there are no variants remaining
+    if matrix.count_rows() == 0:
+        raise Exception('No remaining rows to process!')
 
     # see method docstring, currently disabled
     # matrix = filter_by_ab_ratio(matrix)
