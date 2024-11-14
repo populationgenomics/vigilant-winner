@@ -548,8 +548,12 @@ def annotate_category_4(mt: hl.MatrixTable, ped_file_path: str) -> hl.MatrixTabl
         de_novo_matrix,
         pedigree,
         pop_frequency_prior=de_novo_matrix.info.gnomad_af,
-        ignore_in_sample_allele_frequency=True,
+        min_gq=config_retrieve(['RunHailFiltering', 'min_gq'], 20),
+        min_p=config_retrieve(['RunHailFiltering', 'min_p'], 0.05),
         max_parent_ab=config_retrieve(['RunHailFiltering', 'max_parent_ab'], 0.05),
+        min_child_ab=config_retrieve(['RunHailFiltering', 'min_child_ab'], 0.20),
+        min_dp_ratio=config_retrieve(['RunHailFiltering', 'min_dp_ratio'], 0.10),
+        ignore_in_sample_allele_frequency=True,
     )
 
     # re-key the table by locus,alleles, removing the sampleID from the compound key
