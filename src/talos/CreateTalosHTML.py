@@ -231,6 +231,10 @@ class HTMLBuilder:
         self.metadata = results_dict.metadata
         self.panel_names = {panel.name for panel in self.metadata.panels}
 
+        # if a variant has any filters (AB Ratio, Low Depth), the variant will only be reported if it's in this list
+        # needs to go here because it's used in the loop below
+        self.allow_filters: set[str] = set(config_retrieve(['CreateTalosHTML', 'allow_filters'], []))
+
         # Process samples and variants
         self.samples: list[Sample] = []
         for sample, content in results_dict.results.items():
@@ -247,6 +251,7 @@ class HTMLBuilder:
                     html_builder=self,
                 ),
             )
+
         self.samples.sort(key=lambda x: x.ext_id)
 
     def get_summary_stats(self) -> tuple[pd.DataFrame, list[str], list[dict]]:
@@ -444,7 +449,12 @@ class Sample:
         self.seqr_id = html_builder.seqr.get(name, None)
         self.report_url = f'{indi_folder}/{self.name}.html'
 
-        # Ingest variants excluding any on the forbidden gene list
+        # exclude any on the forbidden gene list
+        variants = [var for var in variants if not variant_in_forbidden_gene(var, html_builder.forbidden_genes)]
+
+        # drop variants which fail quality/depth filters, unless all filters are explicitly permitted
+        variants = [var for var in variants if not (var.flags - html_builder.allow_filters)]
+
         self.variants = [
             Variant(
                 report_variant,
@@ -559,7 +569,9 @@ class Variant:
             else []
         )
 
+        # make these accessible in the report/presentation
         self.var_data.info['alpha_missense_max'] = max(am_scores) if am_scores else 'missing'
+        self.exomiser_results = report_variant.exomiser_results
 
         # this is the weird gnomad callset ID
         if (

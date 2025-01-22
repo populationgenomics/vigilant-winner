@@ -79,7 +79,7 @@ def test_dominant_autosomal_fails_on_depth(pedigree_path):
     test case for autosomal dominant depth failure
     """
 
-    info_dict = {'gnomad_af': 0.0001, 'gnomad_ac': 0, 'gnomad_hom': 0, 'gene_id': 'TEST1'}
+    info_dict = {'gnomad_af': 0.0001, 'af': 0.0001, 'gnomad_ac': 0, 'gnomad_hom': 0, 'gene_id': 'TEST1'}
     dom = DominantAutosomal(pedigree=make_flexible_pedigree(pedigree_path))
 
     # passes with heterozygous
@@ -100,10 +100,17 @@ def test_dominant_autosomal_passes(pedigree_path):
     :return:
     """
 
-    info_dict = {'gnomad_af': 0.0001, 'gnomad_ac': 0, 'gnomad_hom': 0, 'cat1': True, 'gene_id': 'TEST1'}
+    info_dict = {
+        'gnomad_af': 0.0001,
+        'af': 0.0001,
+        'gnomad_ac': 0,
+        'gnomad_hom': 0,
+        'categoryboolean1': True,
+        'gene_id': 'TEST1',
+    }
 
     # attributes relating to categorisation
-    boolean_categories = ['cat1']
+    boolean_categories = ['categoryboolean1']
 
     dom = DominantAutosomal(pedigree=make_flexible_pedigree(pedigree_path))
 
@@ -144,11 +151,22 @@ def test_dominant_autosomal_passes(pedigree_path):
 
 
 @pytest.mark.parametrize('info', [{'gnomad_af': 0.1}, {'gnomad_hom': 2}])
-def test_dominant_autosomal_fails(info, pedigree_path):
+def test_dominant_autosomal_fails_gnomad(info, pedigree_path):
     """
-    test case for autosomal dominant
-    :param info: info dict for the variant
-    :return:
+    test case for autosomal dominant failing for high AC in gnomad
+    """
+
+    dom = DominantAutosomal(pedigree=make_flexible_pedigree(pedigree_path))
+
+    # fails due to high af
+    failing_variant = SmallVariant(info=info, het_samples={'male'}, coordinates=TEST_COORDS, transcript_consequences=[])
+    assert not dom.run(principal=failing_variant)
+
+
+@pytest.mark.parametrize('info', [{'af': 0.1}, {'gnomad_hom': 2}])
+def test_dominant_autosomal_fails_callset(info, pedigree_path):
+    """
+    test case for autosomal dominant failing due to frequency within the callset
     """
 
     dom = DominantAutosomal(pedigree=make_flexible_pedigree(pedigree_path))

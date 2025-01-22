@@ -129,7 +129,7 @@
     <td>
         {# Exomiser #}
         {% if 'exomiser' in variant.categories %}
-            {% for exomiser_entry in variant.var_data.info.exomiser %}
+            {% for exomiser_entry in variant.exomiser_results %}
                 {{exomiser_entry}}
             {% endfor %}
         {% endif %}

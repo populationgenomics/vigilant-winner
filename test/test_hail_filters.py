@@ -9,43 +9,26 @@ from talos.RunHailFiltering import filter_matrix_by_ac, filter_on_quality_flags,
 
 
 @pytest.mark.parametrize(  # needs clinvar
-    'ac,an,clinvar,svdb,exomiser,threshold,rows',
+    'ac,an,threshold,rows',
     [
-        ([1], 1, 0, 0, 'missing', 0.01, 1),
-        ([6], 1, 0, 0, 'missing', 0.01, 0),
-        ([6], 1, 0, 1, 'missing', 0.01, 1),
-        ([6], 1, 0, 0, 'present', 0.01, 1),
-        ([6], 1, 1, 0, 'missing', 0.01, 1),
-        ([6], 70, 0, 0, 'missing', 0.1, 1),
-        ([50], 999999, 0, 0, 'missing', 0.01, 1),
-        ([50], 50, 0, 0, 'missing', 0.01, 0),
-        ([50], 50, 1, 0, 'missing', 0.01, 1),
+        ([1], 1, 0.01, 1),
+        ([6], 1, 0.01, 0),
+        ([6], 70, 0.1, 1),
+        ([50], 999999, 0.01, 1),
+        ([50], 50, 0.01, 0),
     ],
 )
 def test_ac_filter_no_filt(
     ac: int,
     an: int,
-    clinvar: int,
-    svdb: str,
-    exomiser: str,
     threshold: float,
     rows: int,
     make_a_mt: hl.MatrixTable,
 ):
     """
     run tests on the ac filtering method
-    check that a clinvar pathogenic overrides the AC test
     """
-    matrix = make_a_mt.annotate_rows(
-        info=make_a_mt.info.annotate(
-            clinvar_talos=clinvar,
-            AC=ac,
-            AN=an,
-            categorybooleansvdb=svdb,
-            categorydetailsexomiser=exomiser,
-        ),
-    )
-
+    matrix = make_a_mt.annotate_rows(info=make_a_mt.info.annotate(AC=ac, AN=an))
     assert filter_matrix_by_ac(matrix, threshold).count_rows() == rows
 
 
