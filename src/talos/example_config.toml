@@ -57,6 +57,9 @@ max_parent_ab = 0.05
 minimum_depth = 10
 spliceai = 0.5
 
+# if true, we retain all common-in-callset variants if they have been prioritised as pathogenic (ClinVar, Exomiser)
+allow_clinvar_common = false
+
 [RunHailFiltering.cores]
 small_variants = 8
 
@@ -76,6 +79,10 @@ external_labels = "path to labels file"
 seqr_lookup = "e.g. gs://cpg-COHORT-test/reanalysis/parsed_seqr.json"
 seqr_instance = "e.g. https://seqr.populationgenomics.org.au"
 seqr_project = "e.g. COHORT_project_id"
+
+# a variant will only be permitted into the final report if it has no `flags` attached, or if all the attached
+# flags fully overlap with this list. Examples are "AB Ratio" for allelic balance, or "Low Read Depth"
+allow_filters = ['Ambiguous Cat.1 MOI', 'Affected female with heterozygous variant in XLR gene']
 
 [HPOFlagging]
 # this section relates to phenotype-matching the final variant set

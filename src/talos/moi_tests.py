@@ -15,6 +15,7 @@ from talos.utils import X_CHROMOSOME, CompHetDict
 
 # config keys to use for dominant MOI tests
 CALLSET_AF_SV_DOMINANT = 'callset_af_sv_dominant'
+CB1 = 'categoryboolean1'
 GNOMAD_RARE_THRESHOLD = 'gnomad_dominant'
 GNOMAD_AD_AC_THRESHOLD = 'gnomad_max_ac_dominant'
 GNOMAD_DOM_HOM_THRESHOLD = 'gnomad_max_homs_dominant'
@@ -174,7 +175,7 @@ class BaseMoi:
                 self.pedigree.by_id[sample_id].affected == '2'
                 and variant.sample_category_check(sample_id, allow_support=False)
             )
-        ) or variant.check_read_depth(sample_id, self.minimum_depth, var_is_cat_1=variant.info.get('categoryboolean1')):
+        ) or variant.check_read_depth(sample_id, self.minimum_depth, var_is_cat_1=variant.info.get(CB1)):
             return True
         return False
 
@@ -264,7 +265,7 @@ class BaseMoi:
         }
 
     @staticmethod
-    def check_frequency_passes(info: dict, thresholds: dict[str, int | float], permit_clinvar: bool = True) -> bool:
+    def check_frequency_fails(info: dict, thresholds: dict[str, int | float], permit_clinvar: bool = True) -> bool:
         """
         Method to check multiple info keys against a single threshold
         This just reduces the line count, as this is called a bunch of times
@@ -276,11 +277,34 @@ class BaseMoi:
             permit_clinvar (bool): if True, always allow clinvar pathogenic variants to pass
 
         Returns:
-            True if any of the info attributes is above the threshold
+            True if any of the info attributes are above the threshold, unless we use a clinvar escape
         """
-        if permit_clinvar and info.get('categoryboolean1'):
-            return True
-        return all(info.get(key, 0) <= test for key, test in thresholds.items())
+        if permit_clinvar and info.get(CB1):
+            return False
+        return any(info.get(key, 0) > test for key, test in thresholds.items())
+
+    @staticmethod
+    def check_callset_af_fails(info: dict, threshold: float) -> bool:
+        """
+        unlike the frequency method above, we want to apply an escape condition here
+        - if the callset is large enough, apply this filter
+
+        this is predicated on info containing both ac and af
+        previously we've permitted < 5 instances in the callset through
+
+        Args:
+            info (dict): info dict for this variant
+            threshold (float): the threshold value for this test
+
+        Returns:
+            True if this variant is above the filtering threshold
+        """
+
+        min_ac = 5
+        if info.get('ac', 0) <= min_ac:
+            return False
+
+        return info.get('af', 0.0) >= threshold
 
     def check_comp_het(self, sample_id: str, variant_1: VARIANT_MODELS, variant_2: VARIANT_MODELS) -> bool:
         """
@@ -356,11 +380,13 @@ class DominantAutosomal(BaseMoi):
         classifications = []
 
         # reject support for dominant MOI, apply checks based on var type
-        if principal.support_only or not (
-            self.check_frequency_passes(
+        if (
+            principal.support_only
+            or self.check_frequency_fails(
                 principal.info,
                 self.freq_tests[principal.__class__.__name__],
             )
+            or self.check_callset_af_fails(principal.info, self.ad_threshold)
         ):
             return classifications
 
@@ -377,7 +403,7 @@ class DominantAutosomal(BaseMoi):
                 principal.check_read_depth(
                     sample_id,
                     self.minimum_depth,
-                    var_is_cat_1=principal.info.get('categoryboolean1'),
+                    var_is_cat_1=principal.info.get(CB1),
                 )
             ):
                 continue
@@ -447,7 +473,7 @@ class RecessiveAutosomalCH(BaseMoi):
         classifications = []
 
         # remove if too many homs are present in population databases
-        if not self.check_frequency_passes(
+        if self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -462,7 +488,7 @@ class RecessiveAutosomalCH(BaseMoi):
                     self.pedigree.by_id[sample_id].affected == '2'
                     and principal.sample_category_check(sample_id, allow_support=True)
                 )
-            ) or (principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1'))):
+            ) or (principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1))):
                 continue
 
             for partner_variant in check_for_second_hit(
@@ -474,8 +500,8 @@ class RecessiveAutosomalCH(BaseMoi):
                 if partner_variant.check_read_depth(
                     sample_id,
                     self.minimum_depth,
-                    partner_variant.info.get('categoryboolean1'),
-                ) or not self.check_frequency_passes(
+                    partner_variant.info.get(CB1),
+                ) or self.check_frequency_fails(
                     partner_variant.info,
                     self.freq_tests[partner_variant.__class__.__name__],
                 ):
@@ -539,7 +565,7 @@ class RecessiveAutosomalHomo(BaseMoi):
         classifications = []
 
         # remove if too many homs are present in population databases
-        if principal.support_only or not self.check_frequency_passes(
+        if principal.support_only or self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -554,7 +580,7 @@ class RecessiveAutosomalHomo(BaseMoi):
                     self.pedigree.by_id[sample_id].affected == '2'
                     and principal.sample_category_check(sample_id, allow_support=False)
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             # check if this is a possible candidate for homozygous inheritance
@@ -633,14 +659,15 @@ class XDominant(BaseMoi):
 
         classifications = []
 
-        if principal.support_only:
-            return classifications
-
         # never apply dominant MOI to support variants
         # more stringent Pop.Freq checks for dominant - hemi restriction
-        if not self.check_frequency_passes(
-            principal.info,
-            self.freq_tests[principal.__class__.__name__],
+        if (
+            principal.support_only
+            or self.check_frequency_fails(
+                principal.info,
+                self.freq_tests[principal.__class__.__name__],
+            )
+            or self.check_callset_af_fails(principal.info, self.ad_threshold)
         ):
             return classifications
 
@@ -656,7 +683,7 @@ class XDominant(BaseMoi):
                     principal.sample_category_check(sample_id, allow_support=False)
                     and self.pedigree.by_id[sample_id].affected == '2'
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             # check if this is a candidate for dominant inheritance
@@ -737,7 +764,7 @@ class XPseudoDominantFemale(BaseMoi):
 
         # never apply dominant MOI to support variants
         # more stringent Pop.Freq checks for dominant - hemi restriction
-        if not self.check_frequency_passes(
+        if self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -755,7 +782,7 @@ class XPseudoDominantFemale(BaseMoi):
                     principal.sample_category_check(sample_id, allow_support=False)
                     and self.pedigree.by_id[sample_id].affected == '2'
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             # check if this is a candidate for dominant inheritance
@@ -833,7 +860,7 @@ class XRecessiveMale(BaseMoi):
         classifications = []
 
         # remove from analysis if too many homs are present in population databases
-        if not self.check_frequency_passes(
+        if self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -853,7 +880,7 @@ class XRecessiveMale(BaseMoi):
                     self.pedigree.by_id[sample_id].affected == '2'
                     and principal.sample_category_check(sample_id, allow_support=False)
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             # check if this is a possible candidate for homozygous inheritance
@@ -914,7 +941,7 @@ class XRecessiveFemaleHom(BaseMoi):
         classifications = []
 
         # remove from analysis if too many homs are present in population databases
-        if principal.support_only or not self.check_frequency_passes(
+        if principal.support_only or self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -930,7 +957,7 @@ class XRecessiveFemaleHom(BaseMoi):
                     self.pedigree.by_id[sample_id].affected == '2'
                     and principal.sample_category_check(sample_id, allow_support=False)
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             # check if this is a possible candidate for homozygous inheritance
@@ -997,7 +1024,7 @@ class XRecessiveFemaleCH(BaseMoi):
         classifications = []
 
         # remove from analysis if too many homs are present in population databases
-        if not self.check_frequency_passes(
+        if self.check_frequency_fails(
             principal.info,
             self.freq_tests[principal.__class__.__name__],
         ):
@@ -1013,7 +1040,7 @@ class XRecessiveFemaleCH(BaseMoi):
                     self.pedigree.by_id[sample_id].affected == '2'
                     and principal.sample_category_check(sample_id, allow_support=True)
                 )
-            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get('categoryboolean1')):
+            ) or principal.check_read_depth(sample_id, self.minimum_depth, principal.info.get(CB1)):
                 continue
 
             for partner in check_for_second_hit(
@@ -1023,14 +1050,14 @@ class XRecessiveFemaleCH(BaseMoi):
                 require_non_support=principal.sample_support_only(sample_id),
             ):
                 # allow for de novo check - also screen out high-AF partners
-                if not partner.sample_category_check(sample_id, allow_support=True) or not self.check_frequency_passes(
+                if not partner.sample_category_check(sample_id, allow_support=True) or self.check_frequency_fails(
                     partner.info,
                     self.freq_tests[partner.__class__.__name__],
                 ):
                     continue
 
                 # check for minimum depth in partner
-                if partner.check_read_depth(sample_id, self.minimum_depth, partner.info.get('categoryboolean1')):
+                if partner.check_read_depth(sample_id, self.minimum_depth, partner.info.get(CB1)):
                     continue
 
                 if not self.check_comp_het(sample_id=sample_id, variant_1=principal, variant_2=partner):

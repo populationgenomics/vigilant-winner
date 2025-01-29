@@ -68,11 +68,12 @@ DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 MEMBER_LOOKUP_DICT = {'0': None}
 
 DOI_URL = 'https://doi.org/'
+EXOMISER = 'exomiser'
 
 
 def get_random_string(length: int = 6) -> str:
     """
-    get a random string of a pre-determined leng`th
+    get a random string of a pre-determined length
     Args:
         length ():
 
@@ -341,8 +342,8 @@ def organise_exomiser(
 
     info_dict['categorysampleexomiser'] = []
 
-    # this becomes a dict of dicts - Family, MOI, rank
-    info_dict['exomiser'] = defaultdict(dict)
+    # this becomes a dict of dicts - Proband, MOI, rank
+    info_dict[EXOMISER] = defaultdict(dict)
 
     # if completely absent, the 'samples' category annotation is an empty set
     if 'categorydetailsexomiser' not in info_dict:
@@ -366,18 +367,24 @@ def organise_exomiser(
         if rank_threshold and rank_int > rank_threshold:
             continue
 
-        info_dict['exomiser'][sam_id][moi] = rank_int
+        info_dict[EXOMISER][sam_id][moi] = rank_int
 
     # keep the sample-type category for use in "is this variant labelled for this sample" checks
     # it's not exact - we need the pedigree for this to work at all
     # and there is the potential for catching family members without the variant
-    info_dict['categorysampleexomiser'] = list(info_dict['exomiser'].keys())
+    info_dict['categorysampleexomiser'] = list(info_dict[EXOMISER].keys())
 
 
 def polish_exomiser_results(results: ResultData) -> None:
     """
     now that we have all the per-participant events, we pare back any exomiser content in the variant info
     field to be exclusively those relevant to each sample
+
+    TODO - the previous attempt at this section replaced the info.exomiser dict with a list
+           but the var_data object is actually a pointer to a shared object. If you replace dict -> list
+           for one sample, but multiple individuals have the variant, by the time it comes to the second
+           person the structure is already a list, so this breaks.
+           That might provide some insight re: memory explosions...
 
     Args:
         results (ResultData): the results object to be updated
@@ -387,14 +394,11 @@ def polish_exomiser_results(results: ResultData) -> None:
         # for each variant
         for var in content.variants:
             # if this sample had exomiser ratings
-            if 'exomiser' in var.categories:
+            if EXOMISER in var.categories:
                 # pull out the exomiser section specific to this sample
-                exomiser_section = var.var_data.info['exomiser'][sample]
+                exomiser_section = var.var_data.info[EXOMISER][sample]
                 # shove them in a list of strings
-                var.var_data.info['exomiser'] = [f'{moi}:{rank}' for moi, rank in exomiser_section.items()]
-            else:
-                # if it wasn't categorised for this sample, empty list
-                var.var_data.info['exomiser'] = []
+                var.exomiser_results = [f'{moi}:{rank}' for moi, rank in exomiser_section.items()]
 
 
 def organise_pm5(info_dict: dict[str, Any]):

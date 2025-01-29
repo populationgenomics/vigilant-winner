@@ -345,49 +345,52 @@ def extract_annotations(mt: hl.MatrixTable) -> hl.MatrixTable:
     )
 
 
+def permissive_filter_matrix_by_ac(mt: hl.MatrixTable, ac_threshold: float = 0.01) -> hl.MatrixTable:
+    """
+    Remove variants with AC in joint-call over threshold
+    Will never remove variants with 5 or fewer instances
+    Retain high frequency variants if already prioritised in ClinVar or Exomiser
+
+    Args:
+        mt (hl.MatrixTable):
+        ac_threshold (float):
+    Returns:
+        MT with all common-in-this-JC variants removed (unless overridden by clinvar path)
+    """
+    min_callset_ac = 5
+    return mt.filter_rows(
+        ((min_callset_ac >= mt.info.AC[0]) | (ac_threshold > mt.info.AC[0] / mt.info.AN))
+        | ((mt.info.clinvar_talos == ONE_INT) | (mt.info.categorydetailsexomiser != MISSING_STRING)),
+    )
+
+
 def filter_matrix_by_ac(mt: hl.MatrixTable, ac_threshold: float = 0.01) -> hl.MatrixTable:
     """
     Remove variants with AC in joint-call over threshold
     Will never remove variants with 5 or fewer instances
-    Also overridden by having a Clinvar Pathogenic anno.
+    This is now more strict, not permitting clinvar pathogenics to pass through
 
     Args:
         mt (hl.MatrixTable):
         ac_threshold (float):
     Returns:
         MT with all common-in-this-JC variants removed
-        (unless overridden by clinvar path)
     """
     min_callset_ac = 5
-    return mt.filter_rows(
-        ((min_callset_ac >= mt.info.AC[0]) | (ac_threshold > mt.info.AC[0] / mt.info.AN))
-        | (
-            (mt.info.clinvar_talos == ONE_INT)
-            | (mt.info.categorybooleansvdb == ONE_INT)
-            | (mt.info.categorydetailsexomiser != MISSING_STRING)
-        ),
-    )
+    return mt.filter_rows((min_callset_ac >= mt.info.AC[0]) | (ac_threshold > mt.info.AC[0] / mt.info.AN))
 
 
 def filter_to_population_rare(mt: hl.MatrixTable) -> hl.MatrixTable:
     """
     run the rare filter, using Gnomad Exomes and Genomes
-    allow clinvar pathogenic to slip through this filter
     """
     # gnomad exomes and genomes below threshold or missing
     # if missing they were previously replaced with 0.0
     # 'semi-rare' as dominant filters will be more strictly filtered later
     rare_af_threshold = config_retrieve(['RunHailFiltering', 'af_semi_rare'])
     return mt.filter_rows(
-        (
-            (hl.or_else(mt.gnomad_exomes.AF, MISSING_FLOAT_LO) < rare_af_threshold)
-            & (hl.or_else(mt.gnomad_genomes.AF, MISSING_FLOAT_LO) < rare_af_threshold)
-        )
-        | (
-            (mt.info.clinvar_talos == ONE_INT)
-            | (mt.info.categorybooleansvdb == ONE_INT)
-            | (mt.info.categorydetailsexomiser != MISSING_STRING)
-        ),
+        (hl.or_else(mt.gnomad_exomes.AF, MISSING_FLOAT_LO) < rare_af_threshold)
+        & (hl.or_else(mt.gnomad_genomes.AF, MISSING_FLOAT_LO) < rare_af_threshold)
     )
 
 
@@ -966,6 +969,9 @@ def main(
     # remove any rows which have no genes of interest
     mt = remove_variants_outside_gene_roi(mt=mt, green_genes=green_expression)
 
+    # remove common-in-gnomad variants
+    mt = filter_to_population_rare(mt=mt)
+
     if checkpoint:
         mt = generate_a_checkpoint(mt, f'{checkpoint}_green_genes')
 
@@ -978,17 +984,17 @@ def main(
     # if a SVDB data is provided, use that to apply category annotations
     mt = annotate_splicevardb(mt=mt, svdb_path=svdb)
 
-    # remove common-in-gnomad variants (also includes ClinVar annotation)
-    mt = filter_to_population_rare(mt=mt)
-
     # filter out quality failures
     mt = filter_on_quality_flags(mt=mt)
 
     # running global quality filter steps
     mt = filter_to_well_normalised(mt=mt)
 
-    # filter variants by frequency
-    mt = filter_matrix_by_ac(mt=mt)
+    # filter variants by frequency - allow for ClinVar as an escape mechanism for this filter if
+    if config_retrieve(['RunHailFiltering', 'allow_clinvar_common'], False):
+        mt = permissive_filter_matrix_by_ac(mt=mt)
+    else:
+        mt = filter_matrix_by_ac(mt=mt)
 
     # rearrange the row annotation to make syntax nicer downstream
     mt = extract_annotations(mt=mt)

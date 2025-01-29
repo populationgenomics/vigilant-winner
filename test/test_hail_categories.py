@@ -157,23 +157,17 @@ def test_green_from_panelapp():
 
 
 @pytest.mark.parametrize(
-    'exomes,genomes,clinvar,svdb,exomiser,length',
+    'exomes,genomes,length',
     [
-        [0, 0, 0, 0, 'missing', 1],
-        [1.0, 0, 0, 0, 'missing', 0],
-        [1.0, 0, 0, 0, 'present', 1],
-        [1.0, 0, 0, 1, 'missing', 1],
-        [1.0, 0, 1, 0, 'missing', 1],
-        [0.0001, 0.0001, 0, 0, 'missing', 1],
-        [0.0001, 0.0001, 1, 0, 'missing', 1],
+        [0, 0, 1],
+        [1.0, 0, 0],
+        [0.0001, 0.0001, 1],
+        [0.0001, 0.0001, 1],
     ],
 )
 def test_filter_rows_for_rare(
     exomes: float,
     genomes: float,
-    clinvar: int,
-    svdb: int,
-    exomiser: str,
     length: int,
     make_a_mt,
 ):
@@ -183,11 +177,6 @@ def test_filter_rows_for_rare(
     anno_matrix = make_a_mt.annotate_rows(
         gnomad_genomes=hl.Struct(AF=genomes),
         gnomad_exomes=hl.Struct(AF=exomes),
-        info=make_a_mt.info.annotate(
-            clinvar_talos=clinvar,
-            categorybooleansvdb=svdb,
-            categorydetailsexomiser=exomiser,
-        ),
     )
     matrix = filter_to_population_rare(anno_matrix)
     assert matrix.count_rows() == length
