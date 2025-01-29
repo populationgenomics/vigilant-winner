@@ -7,3 +7,6 @@ additional*
 .github
 automated*
 .coverage*
+phenio.db
+talos_venv
+2*

@@ -70,7 +70,7 @@ def test_moi_runner(moi_string: str, filters: list[str], pedigree_path):
 
     # the imported (uninstantiated) objects don't have __class__
     # and the instantiated objects don't have a __name__
-    for filter1, filter2 in zip(test_runner.filter_list, filters):
+    for filter1, filter2 in zip(test_runner.filter_list, filters, strict=True):
         assert filter2 in str(filter1.__class__)
 
 

@@ -1,2 +1,0 @@
-gql
-metamist>=7.4.0

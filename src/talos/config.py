@@ -4,7 +4,7 @@ https://github.com/populationgenomics/cpg-utils/blob/main/cpg_utils/config.py
 """
 
 from os import environ
-from typing import Any, Type
+from typing import Any
 
 import toml
 
@@ -76,7 +76,7 @@ def config_retrieve(key: list[str] | str, default: Any | None = Unsupplied, conf
     return d
 
 
-def config_check(key: list[str], expected_type: Type | tuple[Type]) -> list[str]:
+def config_check(key: list[str], expected_type: type | tuple[type]) -> list[str]:
     """
     take a path to a config entry, and one or more expected types
     return a list of Strings:
@@ -85,7 +85,7 @@ def config_check(key: list[str], expected_type: Type | tuple[Type]) -> list[str]
         - if the key(s) lead to a value, and the type is correct, return an empty list
     Args:
         key (list[str]): the keys for each layer in the config dict, leading to a value to test
-        expected_type (Type | tuple[Type]): Type(s) we accept for this config value
+        expected_type (type | tuple[type]): Type(s) we accept for this config value
     Returns:
         a list of the faults in the config search & type check, can be empty
     """

@@ -16,7 +16,13 @@ def resultdata(data_dict: dict) -> dict:
     for _sample, content in data_dict['results'].items():
         sample_meta = content['metadata']
         assert all(key in sample_meta for key in ['panel_ids', 'panel_names'])
-        sample_meta['panel_details'] = dict(zip(sample_meta.pop('panel_ids'), sample_meta.pop('panel_names')))
+        sample_meta['panel_details'] = dict(
+            zip(
+                sample_meta.pop('panel_ids'),
+                sample_meta.pop('panel_names'),
+                strict=True,
+            ),
+        )
 
         for variant in content['variants']:
             panels = variant['panels']

@@ -34,6 +34,8 @@ dependencies = [
     "pytest-httpx",
     "pytest-xdist>=3.6.0",
     "python-dateutil>=2",
+    "semsimian==0.2.19",
+    "setuptools",  # undocumented requirement of peds
     "tabulate>=0.8.9",
     "tenacity>=9.0.0",
     "toml==0.10.2",

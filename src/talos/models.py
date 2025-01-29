@@ -4,6 +4,7 @@ A home for all data models used in Talos
 
 from enum import Enum
 from typing import Any
+from itertools import pairwise
 
 from pydantic import BaseModel, Field
 
@@ -599,7 +600,7 @@ def lift_up_model_version(
     # e.g. [(None, 1), (1,2), (2,3), (3,4), (4,5)]
     # starting at the current index, and moving up from there
     # e.g. liftover from 2 to 5 would use [(2,3), (3,4), (4,5)]
-    for previous, current in list(zip(ALL_VERSIONS, ALL_VERSIONS[1:]))[from_version_index:]:
+    for previous, current in list(pairwise(ALL_VERSIONS))[from_version_index:]:
         liftover_key = f'{previous}_{current}'
         if liftover_key in LIFTOVER_METHODS[model]:
             data = LIFTOVER_METHODS[model][liftover_key](data)

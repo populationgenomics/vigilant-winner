@@ -298,7 +298,7 @@ def get_phase_data(samples, var) -> dict[str, dict[int, str]]:
     # but are un-phased variants
 
     try:
-        for sample, phase, genotype in zip(samples, map(int, var.format('PS')), var.genotypes):
+        for sample, phase, genotype in zip(samples, map(int, var.format('PS')), var.genotypes, strict=True):
             # cyvcf2.Variant holds two ints, and a bool
             allele_1, allele_2, phased = genotype
             if not phased:
@@ -311,7 +311,7 @@ def get_phase_data(samples, var) -> dict[str, dict[int, str]]:
         get_logger().info('failed to find PS phase attributes')
         try:
             # retry using PGT & PID
-            for sample, phase_gt, phase_id in zip(samples, var.format('PGT'), var.format('PID')):
+            for sample, phase_gt, phase_id in zip(samples, var.format('PGT'), var.format('PID'), strict=True):
                 if phase_gt != '.' and phase_id != '.':
                     phased_dict[sample][phase_id] = phase_gt
 
@@ -486,7 +486,7 @@ def create_small_variant(
     """
 
     coordinates = Coordinates(chrom=var.CHROM.replace('chr', ''), pos=var.POS, ref=var.REF, alt=var.ALT[0])
-    depths: dict[str, int] = dict(zip(samples, map(int, var.gt_depths)))
+    depths: dict[str, int] = dict(zip(samples, map(int, var.gt_depths), strict=True))
     info: dict[str, Any] = {x.lower(): y for x, y in var.INFO} | {'seqr_link': coordinates.string_format}
 
     # optionally - ignore some categories from this analysis
@@ -529,7 +529,7 @@ def create_small_variant(
             info[sam_cat] = list(info[sam_cat])
 
     phased = get_phase_data(samples, var)
-    ab_ratios = dict(zip(samples, map(float, var.gt_alt_freqs)))
+    ab_ratios = dict(zip(samples, map(float, var.gt_alt_freqs), strict=True))
     transcript_consequences = extract_csq(csq_contents=info.pop('csq', ''))
 
     return SmallVariant(
@@ -788,7 +788,7 @@ def get_non_ref_samples(variant, samples: list[str]) -> tuple[set[str], set[str]
     hom_samples = set()
 
     # this iteration is based on the cyvcf2 representations
-    for sam, genotype_int in zip(samples, variant.gt_types):
+    for sam, genotype_int in zip(samples, variant.gt_types, strict=True):
         if genotype_int in BAD_GENOTYPES:
             continue
         if genotype_int == HETALT:
