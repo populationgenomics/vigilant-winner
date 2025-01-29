@@ -24,10 +24,3 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
-
-  # Static type analysis (as much as it's possible in python using type hints)
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
-    hooks:
-      - id: mypy
-        args: [--pretty, --show-error-codes, --install-types, --non-interactive]

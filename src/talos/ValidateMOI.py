@@ -44,7 +44,7 @@ from talos.utils import (
     make_flexible_pedigree,
     read_json_from_path,
 )
-from talos.version import __version__
+from talos import __version__
 
 AMBIGUOUS_FLAG = 'Ambiguous Cat.1 MOI'
 MALE_FEMALE = {
