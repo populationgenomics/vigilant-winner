@@ -11,6 +11,7 @@ from talos.liftover.lift_1_0_0_to_1_0_1 import historicvariants as hv_100_to_101
 from talos.liftover.lift_1_0_0_to_1_0_1 import resultdata as rd_100_to_101
 from talos.liftover.lift_1_0_2_to_1_0_3 import resultdata as rd_102_to_103
 from talos.liftover.lift_1_0_3_to_1_1_0 import resultdata as rd_103_to_110
+from talos.liftover.lift_1_1_0_to_1_2_0 import resultdata as rd_110_to_120
 from talos.liftover.lift_none_to_1_0_0 import phenotypematchedpanels as pmp_none_to_1_0_0
 from talos.liftover.lift_none_to_1_0_0 import resultdata as rd_none_to_1_0_0
 from talos.static_values import get_granular_date, get_logger
@@ -19,8 +20,8 @@ NON_HOM_CHROM = ['X', 'Y', 'MT', 'M']
 CHROM_ORDER = list(map(str, range(1, 23))) + NON_HOM_CHROM
 
 # some kind of version tracking
-CURRENT_VERSION = '1.1.0'
-ALL_VERSIONS = [None, '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.1.0']
+CURRENT_VERSION = '1.2.0'
+ALL_VERSIONS = [None, '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.1.0', '1.2.0']
 
 # ratios for use in AB testing
 MAX_WT = 0.15
@@ -484,6 +485,8 @@ class ParticipantMeta(BaseModel):
     solved: bool = Field(default=False)
     present_in_small: bool = Field(default=False)
     present_in_sv: bool = Field(default=False)
+    family_size: int = Field(default=1)
+    part_of_trio: bool = Field(default=False)
 
 
 class ParticipantResults(BaseModel):
@@ -492,7 +495,8 @@ class ParticipantResults(BaseModel):
     """
 
     variants: list[ReportVariant] = Field(default_factory=list)
-    metadata: ParticipantMeta = Field(default_factory=ParticipantMeta)
+    # This can't be provided as a default_factory, as ParticipantMeta has mandatory arguments
+    metadata: ParticipantMeta = Field(default=ParticipantMeta(ext_id='unknown', family_id='unknown'))
 
 
 class ResultData(BaseModel):
@@ -550,6 +554,9 @@ class PedigreeMember(BaseModel):
     affected: str
     ext_id: str = 'Missing'
     hpo_terms: list[PhenoPacketHpo] = Field(default_factory=list)
+    # some attributes to make report parsing a little easier
+    family_size: int = 1
+    part_of_trio: bool = False
 
 
 class Pedigree(BaseModel):
@@ -568,6 +575,7 @@ LIFTOVER_METHODS: dict = {
         '1.0.0_1.0.1': rd_100_to_101,
         '1.0.2_1.0.3': rd_102_to_103,
         '1.0.3_1.1.0': rd_103_to_110,
+        '1.1.0_1.2.0': rd_110_to_120,
     },
 }
 

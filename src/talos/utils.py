@@ -96,8 +96,11 @@ def make_flexible_pedigree(pedigree: str, pheno_panels: PhenotypeMatchedPanels |
     """
     new_ped = Pedigree()
     ped_data = open_ped(pedigree)
-    for family in ped_data:
-        for member in family:
+    for ped_family in ped_data:
+        part_of_trio = any(
+            member.phenotype == '2' and member.mom is not None and member.dad is not None for member in ped_family
+        )
+        for member in ped_family:
             me = PedigreeMember(
                 family=member.family,
                 id=member.id,
@@ -105,6 +108,8 @@ def make_flexible_pedigree(pedigree: str, pheno_panels: PhenotypeMatchedPanels |
                 father=MEMBER_LOOKUP_DICT.get(member.dad, member.dad),
                 sex=member.sex,
                 affected=member.phenotype,
+                part_of_trio=part_of_trio,
+                family_size=len(ped_family),
             )
 
             # populate this info if we have it from the GeneratePanelData step/output
