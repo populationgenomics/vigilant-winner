@@ -66,6 +66,7 @@ TYPE_UPDATES: dict[str, dict] = {
     'polyphen': {'insert': False, 'name': 'polyphen_prediction'},
     'polyphen_prediction': {'type': 'string'},
     'protein_position': {'type': 'string'},  # here too?
+    'lof': {'type': 'string'},
 }
 
 
