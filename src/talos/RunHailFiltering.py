@@ -1064,13 +1064,16 @@ def main(
     if checkpoint:
         mt = generate_a_checkpoint(mt, f'{checkpoint}_green_and_clean')
 
+    ignored_categories = config_retrieve(['ValidateMOI', 'ignore_categories'], [])
+
     # annotate this MT with exomiser variants - annotated as MISSING if the table is absent
     mt = annotate_exomiser(mt=mt, exomiser=exomiser)
 
     # if a SVDB data is provided, use that to apply category annotations
     mt = annotate_splicevardb(mt=mt, svdb_path=svdb)
 
-    if checkpoint:
+    # don't write an additional checkpoint if no work was done on either of these table joins
+    if checkpoint and (not all(cat in ignored_categories for cat in ['exomiser', 'svdb'])):
         mt = generate_a_checkpoint(mt, f'{checkpoint}_green_and_clean_w_external_tables')
 
     # add Labels to the MT

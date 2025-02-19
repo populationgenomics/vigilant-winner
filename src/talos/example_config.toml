@@ -4,7 +4,7 @@ panelapp = 'https://panelapp.agha.umccr.org/api/v1/panels'
 # panel ID in that panelapp instance to use as a base, by default this is the 'Mendeliome'
 default_panel = 137
 # these genes are removed from the base panel, but will be included if they occur in a phenotype-matched panel
-require_pheno_match = ['FLG', 'GJB2', 'F2', 'F5']
+require_pheno_match = ['FLG', 'GJB2', 'F2', 'F5', 'HFE']
 # genes to remove from any panel, matched or otherwise. Effectively a blacklist
 forbidden_genes = ['a', 'list', 'of', 'forbidden', 'genes']  # symbols, ENSG, or a mix
 # IDs of panels to apply to all participants in this analysis, regardless of phenotype
@@ -67,10 +67,8 @@ csq_string = ['consequence', 'symbol', 'gene', 'feature', 'mane_select', 'biotyp
 
 # variables for the hail operations, including CSQ sets and filter thresholds
 ac_threshold = 0.01
-additional_csq = ['missense_variant']
 af_semi_rare = 0.01
 callset_af_sv_recessive = 0.03
-critical_csq = ['frameshift_variant', 'splice_acceptor_variant', 'splice_donor_variant', 'start_lost', 'stop_gained', 'stop_lost', 'transcript_ablation']
 spliceai = 0.5
 
 [de_novo]

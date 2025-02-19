@@ -97,6 +97,7 @@ else
 fi
 
 # run the Phenotype-based flagging
+# pass the HPO OBO file from http://purl.obolibrary.org/obo/hp.obo
 # downloaded from https://data.monarchinitiative.org/monarch-kg/latest/phenio.db.gz and unzipped
 PHENIO_DB=PLACEHOLDER
 # download Genes to Phenotypes from https://hpo.jax.org/app/data/annotations

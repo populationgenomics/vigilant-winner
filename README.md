@@ -32,7 +32,7 @@ The Dockerfile offers two builds, use the `--target` flag to specify which build
 - one for a Google cloud environment (called `talos_gcloud`).
 
 ```bash
-DOCKERBUILDKIT=1 docker build --target talos_none -t talos:6.6.3  .
+DOCKERBUILDKIT=1 docker build --target talos_none -t talos:6.7.0  .
 ```
 
 ## Workflow Demonstration with Nextflow
@@ -123,3 +123,15 @@ This preparatory script expects that the Exomiser Variant analysis TSVs have the
 The heart of Talos' utility is in re-analysis, by bootstrapping from previous analyses. Where possible each run consults the history from the previous run, determining whether each variant has been seen before, and if so, whether evidence has evolved. Each run adds the incremental content, and re-saves the history.
 
 The final report contains a `first_seen` date for each variant, along with an `evidence_last_updated` date which indicates the most recent date that the evidence changed (new category labels were applied). By filtering on either of these dates, analysts can view only the incremental variants new in each round, or variants where the evidence has changed.
+
+---
+
+## CPG-flow
+
+This repository contains a CPG-flow workflow implementation.
+
+This extracts the workflow as written in [production-pipelines](https://github.com/populationgenomics/production-pipelines/blob/cfac463ce6ef0bcd4297ddb19efe04e2e0842f61/cpg_workflows/stages/talos.py), and runs it using the extracted cpg-flow pipeline framework.
+
+This workflow wrapper is designed not to affect the code as written for other purposes (e.g. using the core scripts in other processes, running the Nextflow implementation of the workflow, etc.).
+
+CPG operators can access a workflow configuration file in [production-pipelines-configuration](https://github.com/populationgenomics/production-pipelines-configuration), required to run the workflow.

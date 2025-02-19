@@ -31,7 +31,6 @@ fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN
 ignore = [
     "ANN001", # Missing type annotation for function argument
     "ANN101", # Missing type annotation for self in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN201", # Missing return type annotation for public function
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "ANN204", # Missing type annotation for special method `__init__`
@@ -45,6 +44,7 @@ ignore = [
     "C901", # method is too complex (> 10 conditions)
     "N999", # invalid module name (not lower-case and potholes)
     "I001", # Import block is un-sorted or un-formatted (to remove soon)
+    "S311", # Standard pseudo-random generators are not suitable for security/cryptographic purposes
 ]
 
 [tool.ruff.format]
@@ -55,5 +55,10 @@ quote-style = "single"
 section-order = ["future", "standard-library", "third-party", "hail", "cpg", "first-party", "local-folder"]
 
 [tool.ruff.lint.isort.sections]
-cpg = ["metamist", "talos"]
+cpg = ["cpg_flow", "cpg_utils", "metamist", "talos"]
 hail = ["hail", "hailtop"]
+
+[tool.ruff.lint.per-file-ignores]
+# suppress the ARG002 "Unused method argument" warning in the stages.py file
+## - we don't need all the generic cpg-flow arguments, but need to fit the required method signature
+"src/talos/CPG/stages.py" = ["ARG002"]

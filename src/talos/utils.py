@@ -86,7 +86,7 @@ def get_random_string(length: int = 6) -> str:
     Returns:
         A random string comprised of upper-case letters and numbers
     """
-    return ''.join(choices(string.ascii_uppercase + string.digits, k=length))  # noqa: S311
+    return ''.join(choices(string.ascii_uppercase + string.digits, k=length))
 
 
 def make_flexible_pedigree(pedigree: str, pheno_panels: PhenotypeMatchedPanels | None = None) -> Pedigree:

@@ -10,7 +10,19 @@ jobs:
     name: Pip Audit
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            requirements-lint.txt
+            requirements-cpg.txt
+
+      - name: Install packages
+        run: pip install -r requirements-dev.txt -r requirements.txt -r requirements-lint.txt -r requirements-cpg.txt
+
       - uses: pypa/gh-action-pip-audit@v1.1.0
         with:
-          inputs: requirements.txt requirements-dev.txt requirements-lint.txt requirements-cpg.txt
           summary: true

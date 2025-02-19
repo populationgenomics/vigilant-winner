@@ -1,4 +1,4 @@
-FROM python:3.11-bullseye AS base
+FROM python:3.10-bullseye AS base
 
 RUN apt update && apt install -y --no-install-recommends \
         apt-transport-https \
@@ -28,6 +28,7 @@ ENV PATH=$PATH:/opt/google-cloud-sdk/bin
 
 # Add in the additional requirements that are most likely to change.
 COPY requirements*.txt README.md setup.py ./
+RUN pip install -r requirements.txt
 COPY src src/
 RUN pip install --upgrade pip && pip install .[cpg]
 

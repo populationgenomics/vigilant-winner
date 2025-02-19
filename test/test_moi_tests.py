@@ -36,11 +36,14 @@ TWO_RESULTS = 2
     'moi_string,filters',
     (
         ('Monoallelic', ['DominantAutosomal']),
-        ('Mono_And_Biallelic', ['DominantAutosomal', 'RecessiveAutosomal']),
-        ('Unknown', ['DominantAutosomal', 'RecessiveAutosomal']),
-        ('Biallelic', ['RecessiveAutosomal']),
-        ('Hemi_Mono_In_Female', ['XRecessive', 'XDominant']),
-        ('Hemi_Bi_In_Female', ['XRecessive']),
+        ('Mono_And_Biallelic', ['DominantAutosomal', 'RecessiveAutosomalCH', 'RecessiveAutosomalHomo']),
+        ('Unknown', ['DominantAutosomal', 'RecessiveAutosomalCH', 'RecessiveAutosomalHomo']),
+        ('Biallelic', ['RecessiveAutosomalCH', 'RecessiveAutosomalHomo']),
+        ('Hemi_Mono_In_Female', ['XRecessiveMale', 'XDominant']),
+        (
+            'Hemi_Bi_In_Female',
+            ['XRecessiveMale', 'XRecessiveFemaleCH', 'XRecessiveFemaleHom', 'XPseudoDominantFemale'],
+        ),
     ),
 )
 def test_moi_runner(moi_string: str, filters: list[str], pedigree_path):
@@ -51,8 +54,8 @@ def test_moi_runner(moi_string: str, filters: list[str], pedigree_path):
 
     # the imported (uninstantiated) objects don't have __class__
     # and the instantiated objects don't have a __name__
-    for filter1, filter2 in zip(test_runner.filter_list, filters):
-        assert filter2 in str(filter1.__class__)
+    for each_filter in test_runner.filter_list:
+        assert each_filter.__class__.__name__ in filters
 
 
 def test_dominant_autosomal_fails_on_depth(pedigree_path):

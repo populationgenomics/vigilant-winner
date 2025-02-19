@@ -1,0 +1,68 @@
+name: Docker
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to use (defaults to "test")'
+        default: "test"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  VERSION: 6.7.0
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      DOCKER_BUILDKIT: 1
+      BUILDKIT_PROGRESS: plain
+      CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+      IMAGE_NAME: talos
+      DOCKER_TMP: australia-southeast1-docker.pkg.dev/cpg-common/images-tmp
+      DOCKER_MAIN: australia-southeast1-docker.pkg.dev/cpg-common/images
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: 'true'
+
+      - id: "google-cloud-auth"
+        name: "Authenticate to Google Cloud"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/1051897107465/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "gh-images-deployer@cpg-common.iam.gserviceaccount.com"
+
+      - name: set up gcloud sdk
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: cpg-common
+
+      - name: gcloud docker auth
+        run: |
+          gcloud auth configure-docker australia-southeast1-docker.pkg.dev
+
+      - name: build
+        run: |
+          docker build . -f Dockerfile --target talos_gcloud --tag $IMAGE_NAME:${{ github.sha }}
+
+      - name: push latest
+        if: ${{ github.ref_name == 'main' }}
+        run: |
+          docker tag $IMAGE_NAME:${{ github.sha }} $DOCKER_MAIN/$IMAGE_NAME:$VERSION
+          docker push $DOCKER_MAIN/$IMAGE_NAME:$VERSION
+
+      - name: manually triggered build
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' }}
+        run: |
+          docker tag $IMAGE_NAME:${{ github.sha }} $DOCKER_TMP/$IMAGE_NAME:${{github.event.inputs.tag}}
+          docker push $DOCKER_TMP/$IMAGE_NAME:${{github.event.inputs.tag}}

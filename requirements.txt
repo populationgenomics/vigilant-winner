@@ -15,6 +15,7 @@ pyspark>=3.5.1
 python-dateutil>=2
 # this is a ruff package with a python interface, limited to specific python versions
 semsimian
+setuptools>=65.5.1
 tabulate>=0.8.9
 tenacity>=9.0.0
 toml==0.10.2
