@@ -109,32 +109,56 @@ def csq_strings_into_hail_structs(csq_strings: list[str], mt: hl.MatrixTable) ->
                     cdna_start=hl.if_else(
                         (x.cdna_position == MISSING_STRING) | (x.cdna_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.cdna_position.split('-')[0]),
+                        hl.if_else(
+                            x.cdna_position.contains('/'),
+                            hl.int32(x.cdna_position.split('/')[0]),
+                            hl.int32(x.cdna_position.split('-')[0]),
+                        ),
                     ),
                     cdna_end=hl.if_else(
                         (x.cdna_position == MISSING_STRING) | (x.cdna_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.cdna_position.split('-')[-1]),
+                        hl.if_else(
+                            x.cdna_position.contains('/'),
+                            hl.int32(x.cdna_position.split('/')[-1]),
+                            hl.int32(x.cdna_position.split('-')[-1]),
+                        ),
                     ),
                     protein_start=hl.if_else(
                         (x.protein_position == MISSING_STRING) | (x.protein_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.protein_position.split('-')[0]),
+                        hl.if_else(
+                            x.cdna_position.contains('/'),
+                            hl.int32(x.protein_position.split('/')[0]),
+                            hl.int32(x.protein_position.split('-')[0]),
+                        ),
                     ),
                     protein_end=hl.if_else(
                         (x.protein_position == MISSING_STRING) | (x.protein_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.protein_position.split('-')[-1]),
+                        hl.if_else(
+                            x.cdna_position.contains('/'),
+                            hl.int32(x.protein_position.split('/')[-1]),
+                            hl.int32(x.protein_position.split('-')[-1]),
+                        ),
                     ),
                     cds_start=hl.if_else(
                         (x.cds_position == MISSING_STRING) | (x.cds_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.cds_position.split('-')[0]),
+                        hl.if_else(
+                            x.cds_position.contains('/'),
+                            hl.int32(x.cds_position.split('/')[0]),
+                            hl.int32(x.cds_position.split('-')[0]),
+                        ),
                     ),
                     cds_end=hl.if_else(
                         (x.cds_position == MISSING_STRING) | (x.cds_position.contains('?')),
                         hl.missing(hl.tint32),
-                        hl.int32(x.cds_position.split('-')[-1]),
+                        hl.if_else(
+                            x.cds_position.contains('/'),
+                            hl.int32(x.cds_position.split('/')[-1]),
+                            hl.int32(x.cds_position.split('-')[-1]),
+                        ),
                     ),
                 ),
                 mt.vep.transcript_consequences,
