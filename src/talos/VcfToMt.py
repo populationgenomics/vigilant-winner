@@ -128,7 +128,7 @@ def csq_strings_into_hail_structs(csq_strings: list[str], mt: hl.MatrixTable) ->
                         (x.protein_position == MISSING_STRING) | (x.protein_position.contains('?')),
                         hl.missing(hl.tint32),
                         hl.if_else(
-                            x.cdna_position.contains('/'),
+                            x.protein_position.contains('/'),
                             hl.int32(x.protein_position.split('/')[0]),
                             hl.int32(x.protein_position.split('-')[0]),
                         ),
@@ -137,7 +137,7 @@ def csq_strings_into_hail_structs(csq_strings: list[str], mt: hl.MatrixTable) ->
                         (x.protein_position == MISSING_STRING) | (x.protein_position.contains('?')),
                         hl.missing(hl.tint32),
                         hl.if_else(
-                            x.cdna_position.contains('/'),
+                            x.protein_position.contains('/'),
                             hl.int32(x.protein_position.split('/')[-1]),
                             hl.int32(x.protein_position.split('-')[-1]),
                         ),
