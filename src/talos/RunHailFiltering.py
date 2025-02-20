@@ -35,7 +35,6 @@ MISSING_FLOAT_LO = hl.float64(0.0)
 MISSING_STRING = hl.str('missing')
 ONE_INT = hl.int32(1)
 BENIGN = hl.str('benign')
-LOFTEE_HC = hl.str('HC')
 PATHOGENIC = hl.str('pathogenic')
 SPLICE_ALTERING = hl.str('splice-altering')
 ADDITIONAL_CSQ_DEFAULT = ['missense_variant']
@@ -571,7 +570,6 @@ def annotate_category_3(mt: hl.MatrixTable) -> hl.MatrixTable:
                         hl.len(
                             mt.vep.transcript_consequences.filter(
                                 lambda x: (hl.len(critical_consequences.intersection(hl.set(x.consequence_terms))) > 0)
-                                & ((x.lof == LOFTEE_HC) | (hl.is_missing(x.lof))),
                             ),
                         )
                         > 0
