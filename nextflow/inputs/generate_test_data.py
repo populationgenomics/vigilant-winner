@@ -51,7 +51,7 @@ loci = [
 ]
 
 # create a SneakyTable object, which will take a list of VepVariant objects
-sn = SneakyTable([v1, v2, v3, v4, v5, v6], '.', sample_schema)
+sn = SneakyTable([v1, v2, v3, v4, v5, v6], '', sample_schema)
 
 # once the table is parsed using the JSON schema, convert to a Hail MatrixTable
 # using the row_major functionality - this takes the list of sample IDs, converts those

@@ -10,9 +10,7 @@ import pytest
 
 from talos.models import PanelApp
 from talos.RunHailFiltering import (
-    annotate_category_1,
     annotate_category_3,
-    annotate_category_5,
     annotate_category_6,
     annotate_clinvarbitration,
     filter_to_categorised,
@@ -27,6 +25,7 @@ category_3_keys = ['locus', 'clinvar_talos', 'lof', 'consequence_terms']
 hl_locus = hl.Locus(contig='chr1', position=1, reference_genome='GRCh38')
 
 
+@pytest.mark.skip(reason='category1 is rolled into clinVar annotation method')
 @pytest.mark.parametrize('value,classified', [(0, 0), (1, 1), (2, 0)])
 def test_class_1_assignment(value, classified, make_a_mt):
     """
@@ -39,8 +38,6 @@ def test_class_1_assignment(value, classified, make_a_mt):
             clinvar_talos_strong=value,
         ),
     )
-
-    anno_matrix = annotate_category_1(anno_matrix)
     assert anno_matrix.info.categoryboolean1.collect() == [classified]
 
 
@@ -79,6 +76,7 @@ def test_class_3_assignment(clinvar_talos, loftee, consequence_terms, classified
     assert anno_matrix.info.categoryboolean3.collect() == [classified]
 
 
+@pytest.mark.skip(reason='category 5 currently inactive')
 @pytest.mark.parametrize(
     'spliceai_score,flag',
     [(0.1, 0), (0.11, 0), (0.3, 0), (0.49, 0), (0.5, 1), (0.69, 1), (0.9, 1)],
@@ -93,7 +91,6 @@ def test_category_5_assignment(spliceai_score: float, flag: int, make_a_mt):
     """
 
     matrix = make_a_mt.annotate_rows(info=make_a_mt.info.annotate(splice_ai_delta=spliceai_score))
-    matrix = annotate_category_5(matrix)
     assert matrix.info.categoryboolean5.collect() == [flag]
 
 

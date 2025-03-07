@@ -1,0 +1,6 @@
+[
+    {"field": "AC", "alias": "gnomad_AC", "missing_value": -2147483648},
+    {"field": "AN", "alias": "gnomad_AN", "missing_value": -2147483648},
+    {"field": "AF", "alias": "gnomad_AF", "missing_value": -0, "multiplier": 2000000},
+    {"field": "nhomalt", "alias": "gnomad_HomAlt", "missing_value": -2147483648},
+]

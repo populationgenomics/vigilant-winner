@@ -6,7 +6,7 @@ PanelApp is a crowd-sourced gene curation knowledge base, aggregating informatio
 * Orange (intermediate evidence)
 * Green (strong evidence linking gene to theme)
 
-For this project, we will focus analysis on a specific list of genes associated strongly with mendelian disease, with an option to supplement this gene list with any number of additional PanelApp entries. The Gene list we will use as the core of the analysis defaults to the [Mendeliome](https://panelapp.agha.umccr.org/panels/137/), though this can be altered through the configuration file.
+For this project, we will focus analysis on a specific list of genes associated strongly with mendelian disease, with an option to supplement this gene list with any number of additional PanelApp entries. The Gene list we will use as the core of the analysis defaults to the [Mendeliome](https://panelapp-aus.org//panels/137/), though this can be altered through the configuration file.
 
 During an analysis run, the [Query Script](../src/talos/QueryPanelapp.py) is used to pull down the latest core panel data (gene ENSG, symbol, and Mode of Inheritance), saved as a dictionary indexed on GRCh38/Ensembl 90 ENSG.
 

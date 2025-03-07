@@ -28,12 +28,9 @@
                             <dd class="col-sm-9">
                                 This Callset: {{variant.var_data.info.ac}} / {{variant.var_data.info.an}}<br>
                                 {% if variant.var_type == 'SmallVariant' %}
-                                    gnomAD WGS: <a
-                                        href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r3"
+                                    gnomAD 4.1: <a
+                                        href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r4"
                                         target="_blank">{{variant.var_data.info.gnomad_ac}}</a><br>
-                                    gnomAD WES: <a
-                                        href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r2_1"
-                                        target="_blank">{{variant.var_data.info.gnomad_ex_ac}}</a>
                                 {% elif (variant.var_type == 'StructuralVariant') and (variant.var_data.info.gnomad_key) %}
                                     gnomAD v2.1: <a
                                         href="https://gnomad.broadinstitute.org/variant/{{variant.var_data.info.gnomad_key}}?dataset=gnomad_sv_r2_1"
@@ -55,15 +52,6 @@
                                     {% endif %}
                                     {% if variant.var_data.info.splice_ai_csq not in ['missing', 'No_consequence']
                                     %}({{variant.var_data.info.splice_ai_csq }}){% endif %}<br>
-                                    {% if variant.var_data.info.revel %}
-                                    Revel: {{variant.var_data.info.revel|round(2)}}<br>
-                                    {% endif %}
-                                    {% if variant.var_data.info.cadd %}
-                                    CADD: {{variant.var_data.info.cadd|round(0)}}<br>
-                                    {% endif %}
-                                    {% if variant.var_data.info.mutationtaster != 'missing' %}
-                                    MutationTaster: {{variant.var_data.info.mutationtaster}}<br>
-                                    {% endif %}
                                 </dd>
 
                                 <dt class="col-sm-3">Links</dt>
@@ -221,7 +209,6 @@
                                     <th>HGVS </th>
                                     <th>HGVS P</th>
                                     <th>Consequence</th>
-                                    <th>LOFTE</th>
                                     <th>Exon</th>
                                     <th>Biotype</th>
                                     <th>MANE ID</th>
@@ -233,13 +220,12 @@
                                 {% for csq in variant.var_data.transcript_consequences%}
                                 <tr>
                                     <td>{{csq.symbol}}</td>
-                                    <td>{{csq.hgvsc}}</td>
-                                    <td>{{csq.hgvsp.split(':')[1]}}</td>
+                                    <td>{{csq.dna_change}}</td>
+                                    <td>{{csq.ensp}} {{csq.amino_acid_change}}</td>
                                     <td>{{csq.consequence}}</td>
-                                    <td>{{csq.lof}}</td>
                                     <td>{{csq.exon}}</td>
                                     <td>{{csq.biotype}}</td>
-                                    <td>{{csq.mane_select}}</td>
+                                    <td>{{csq.nm_id}}</td>
                                     <td>{{csq.am_class}}</td>
                                     <td>{% if csq.am_pathogenicity is float %} {{csq.am_pathogenicity|round(2)}} {% endif %}</td>
                                 </tr>

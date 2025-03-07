@@ -1,9 +1,17 @@
 test
-release_scripts
-inputs
 build
-additional*
 .pytest*
 .github
-automated*
 .coverage*
+.nextflow
+modules
+design_docs
+
+# virtualenv
+talos_3.10
+
+# large files
+gnomAD*
+nextflow*
+genes_to_phenotype.txt
+hpo_terms.obo

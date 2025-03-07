@@ -13,8 +13,8 @@ exomiser = 'Variant prioritised by Exomiser'
 [GeneratePanelData]
 default_panel = 137
 obo_file = "gs://cpg-common-test/references/aip/hpo_terms.obo"
-panelapp = "https://panelapp.agha.umccr.org/api/v1/panels"
-require_pheno_match = [ "FLG", "GJB2", "F2", "F5",]
+panelapp = "https://panelapp-aus.org/api/v1/panels"
+require_pheno_match = [ "FLG", "GJB2", "F2", "F5", "HFE"]
 within_x_months = 3
 forbidden_genes = []
 forced_panels = [ 144,]
@@ -24,14 +24,14 @@ chunk_size = 800
 
 [RunHailFiltering]
 ac_threshold = 0.01
-additional_csq = [ "missense_variant",]
+additional_csq = [ "missense",]
 af_semi_rare = 0.01
 callset_af_sv_recessive = 0.03
-critical_csq = [ "frameshift_variant", "splice_acceptor_variant", "splice_donor_variant", "start_lost", "stop_gained", "stop_lost", "transcript_ablation",]
+critical_csq = [ "frameshift", "splice_acceptor", "splice_donor", "start_lost", "stop_gained", "stop_lost",]
 max_parent_ab = 0.05
 minimum_depth = 10
 spliceai = 0.5
-csq_string = [ "consequence", "symbol", "gene", "feature", "mane_select", "biotype", "exon", "hgvsc", "hgvsp", "cdna_position", "cds_position", "protein_position", "variant_class", "ensp", "lof", "sift", "polyphen", "am_class", "am_pathogenicity",]
+csq_string = [ "consequence", "gene_id", "gene", "transcript", "nm_id", "biotype", "dna_change", "amino_acid_change", "codon", "ensp", "am_class", "am_pathogenicity",]
 
 [ValidateMOI]
 gnomad_dominant = 0.001

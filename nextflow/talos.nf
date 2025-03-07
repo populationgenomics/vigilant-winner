@@ -3,7 +3,6 @@
 nextflow.enable.dsl=2
 
 include { ConvertSpliceVarDb } from './modules/talos/ConvertSpliceVarDb/main'
-include { VcfToMt } from './modules/talos/VcfToMt/main'
 include { ConvertPedToPhenopackets } from './modules/talos/ConvertPedToPhenopackets/main'
 include { MakePhenopackets } from './modules/talos/MakePhenopackets/main'
 include { GeneratePanelData } from './modules/talos/GeneratePanelData/main'
@@ -18,47 +17,57 @@ workflow {
     // existence of these files is necessary for starting the workflow
     // we open them as a channel, and pass the channel through to the method
     // pedigree_channel = Channel.fromPath(params.pedigree)
-    hpo_pedigree_channel = Channel.fromPath(params.hpo_pedigree)
-    hpo_file_channel = Channel.fromPath(params.hpo)
-    runtime_config_channel = Channel.fromPath(params.runtime_config)
-    clinvar_tar_channel = Channel.fromPath(params.clinvar)
-    exomiser_tar_channel = Channel.fromPath(params.exomiser)
-    gen2phen_channel = Channel.fromPath(params.gen2phen)
-    phenio_db_channel = Channel.fromPath(params.phenio_db)
-    svdb_tsv_channel = Channel.fromPath(params.svdb_tsv)
+    ch_hpo_pedigree = channel.fromPath(params.hpo_pedigree)
+    ch_hpo_file = channel.fromPath(params.hpo)
+    ch_runtime_config = channel.fromPath(params.runtime_config)
+    ch_clinvar_tar = channel.fromPath(params.clinvar)
+    ch_exomiser_tar = channel.fromPath(params.exomiser)
+    ch_gen2phen = channel.fromPath(params.gen2phen)
+    ch_phenio_gz = channel.fromPath(params.phenio_db)
+    ch_svdb_tsv = channel.fromPath(params.svdb_tsv)
 
     // convert the SVDB TSV into a Hail Table
-    ConvertSpliceVarDb(svdb_tsv_channel)
-
-    // turn the VCF into a MatrixTable
-    input_vcf = Channel.fromPath(params.annotated_vcf).map{ it -> [file(it), file("${it}.tbi")]}
-    VcfToMt(input_vcf)
-
-    // make a phenopackets file from pedigree (CPG-specific)
-    ConvertPedToPhenopackets(hpo_pedigree_channel)
+    ConvertSpliceVarDb(
+        ch_svdb_tsv
+    )
 
     // make a phenopackets file (CPG-specific)
     // commenting this call out as authenticating inside the container is more effort than it's worth right now
     // the validation cohort doesn't have any phenotypes, so we gain nothing from this
-    // MakePhenopackets(params.cohort, params.sequencing_type, hpo_file_channel, params.sequencing_tech)
+    // MakePhenopackets(params.cohort, params.sequencing_type, ch_hpo_file, params.sequencing_tech)
+
+    // instead... make a phenopackets file from pedigree (CPG-specific)
+    ConvertPedToPhenopackets(
+        ch_hpo_pedigree
+    )
 
     // we can do this by saving as an object, or inside the method call
-    GeneratePanelData(ConvertPedToPhenopackets.out[1], hpo_file_channel)
+    GeneratePanelData(
+        ConvertPedToPhenopackets.out[1],
+        ch_hpo_file
+    )
 
-    QueryPanelapp(GeneratePanelData.out, runtime_config_channel)
+    QueryPanelapp(
+        GeneratePanelData.out,
+        ch_runtime_config
+    )
 
-    FindGeneSymbolMap(QueryPanelapp.out, runtime_config_channel)
+    FindGeneSymbolMap(
+        QueryPanelapp.out,
+        ch_runtime_config
+    )
 
-    // run the hail filtering
+    // run the hail filtering, using a Tarball'd MT path provided in config
+    ch_mt_tar = channel.fromPath(params.matrix_tar, checkIfExists: true)
     RunHailFiltering(
-        VcfToMt.out,
+        ch_mt_tar,
         QueryPanelapp.out,
         ConvertPedToPhenopackets.out[0],
-        clinvar_tar_channel,
-        exomiser_tar_channel,
+        ch_clinvar_tar,
+        ch_exomiser_tar,
         ConvertSpliceVarDb.out,
         params.checkpoint,
-        runtime_config_channel,
+        ch_runtime_config,
     )
 
     // Validate MOI of all variants
@@ -67,22 +76,22 @@ workflow {
         QueryPanelapp.out,
         ConvertPedToPhenopackets.out[0],
         GeneratePanelData.out,
-        runtime_config_channel,
+        ch_runtime_config,
     )
 
     // Flag any relevant HPO terms
     HPOFlagging(
         ValidateMOI.out,
         FindGeneSymbolMap.out,
-        gen2phen_channel,
-        phenio_db_channel,
-        runtime_config_channel,
+        ch_gen2phen,
+        ch_phenio_gz,
+        ch_runtime_config,
     )
 
     // Generate HTML report - only suited to single-report runs
     CreateTalosHTML(
         HPOFlagging.out.pheno_annotated,
         QueryPanelapp.out,
-        runtime_config_channel,
+        ch_runtime_config,
     )
 }

@@ -5,7 +5,7 @@ unit testing collection for the hail MT methods
 import hail as hl
 import pytest
 
-from talos.RunHailFiltering import filter_matrix_by_ac, filter_on_quality_flags, filter_to_well_normalised
+from talos.RunHailFiltering import filter_matrix_by_ac, filter_on_quality_flags
 
 
 @pytest.mark.parametrize(  # needs clinvar
@@ -69,21 +69,3 @@ def test_filter_on_quality_flags(
         info=anno_matrix.info.annotate(clinvar_talos=clinvar),
     )
     assert filter_on_quality_flags(anno_matrix).count_rows() == length
-
-
-@pytest.mark.parametrize(
-    'alleles,length',
-    [
-        (hl.literal(['A', 'C']), 1),
-        (hl.literal(['A', '*']), 0),
-        (hl.literal(['A', 'C', 'G']), 0),
-    ],
-)
-def test_filter_to_well_normalised(alleles, length, make_a_mt):
-    """
-    checks the allele-level tests
-    """
-    # to add new alleles, we need to scrub alleles from the key fields
-    anno_matrix = make_a_mt.key_rows_by('locus')
-    anno_matrix = anno_matrix.annotate_rows(alleles=alleles)
-    assert filter_to_well_normalised(anno_matrix).count_rows() == length

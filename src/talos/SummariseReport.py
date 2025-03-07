@@ -3,8 +3,6 @@
 """
 A standalone script to read some talos report files, and summarise the number of affected samples involved
 
-very very simple
-
 Allows for the printing of affected participants grouped by a portion of the family ID
 Examples are when the family  ID is prefixed with the year, e.g. 19DNAXXXX for 2019
 The simple count function doesn't have this level of granularity

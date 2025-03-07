@@ -17,7 +17,7 @@ from talos.utils import ORDERED_MOIS, get_json_response, get_logger, get_simple_
 
 
 # global variables for PanelApp interaction
-PANELAPP_HARD_CODED_DEFAULT = 'https://panelapp.agha.umccr.org/api/v1/panels'
+PANELAPP_HARD_CODED_DEFAULT = 'https://panelapp-aus.org/api/v1/panels'
 # numerical ID of the Mendeliome in PanelApp Australia
 PANELAPP_HARD_CODED_BASE_PANEL = 137
 

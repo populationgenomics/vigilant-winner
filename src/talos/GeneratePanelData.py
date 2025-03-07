@@ -22,7 +22,7 @@ from talos.utils import get_json_response, read_json_from_path
 
 HPO_RE = re.compile(r'HP:\d+')
 
-PANELAPP_HARD_CODED_DEFAULT = 'https://panelapp.agha.umccr.org/api/v1/panels'
+PANELAPP_HARD_CODED_DEFAULT = 'https://panelapp-aus.org/api/v1/panels'
 PANELAPP_HARD_CODED_BASE_PANEL = 137
 
 try:

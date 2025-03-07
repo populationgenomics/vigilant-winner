@@ -13,8 +13,8 @@ def test_get_panels(httpx_mock, fake_panelapp_overview):
     """
     check that the endpoint parser works ok
     """
-    httpx_mock.add_response(url='https://panelapp.agha.umccr.org/api/v1/panels/', json=fake_panelapp_overview)
-    panels_parsed = get_panels('https://panelapp.agha.umccr.org/api/v1/panels/')
+    httpx_mock.add_response(url='https://panelapp-aus.org/api/v1/panels/', json=fake_panelapp_overview)
+    panels_parsed = get_panels('https://panelapp-aus.org/api/v1/panels/')
     assert panels_parsed == {'HP:1': {2}, 'HP:4': {1}, 'HP:6': {2}}
 
 

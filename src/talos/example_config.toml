@@ -1,6 +1,6 @@
 [GeneratePanelData]
 # the panelapp instance to use
-panelapp = 'https://panelapp.agha.umccr.org/api/v1/panels'
+panelapp = 'https://panelapp-aus.org//api/v1/panels'
 # panel ID in that panelapp instance to use as a base, by default this is the 'Mendeliome'
 default_panel = 137
 # these genes are removed from the base panel, but will be included if they occur in a phenotype-matched panel
@@ -63,14 +63,14 @@ callset_af_threshold = 0.01
 
 [RunHailFiltering]
 # variables affecting how the VCF variants are parsed, and AnalysisVariant objects are populated
-csq_string = ['consequence', 'symbol', 'gene', 'feature', 'mane_select', 'biotype', 'exon', 'hgvsc', 'hgvsp', 'cdna_position', 'cds_position', 'protein_position', 'ensp', 'lof', 'sift', 'polyphen', 'am_class', 'am_pathogenicity']
+csq_string = [ "consequence", "gene_id", "gene", "transcript", "nm_id", "biotype", "dna_change", "amino_acid_change", "codon", "ensp", "am_class", "am_pathogenicity",]
 
 # variables for the hail operations, including CSQ sets and filter thresholds
 ac_threshold = 0.01
-additional_csq = ['missense_variant']
+additional_csq = ['missense']
 af_semi_rare = 0.01
 callset_af_sv_recessive = 0.03
-critical_csq = ['frameshift_variant', 'splice_acceptor_variant', 'splice_donor_variant', 'start_lost', 'stop_gained', 'stop_lost', 'transcript_ablation']
+critical_csq = [ "frameshift", "splice_acceptor", "splice_donor", "start_lost", "stop_gained", "stop_lost",]
 spliceai = 0.5
 
 [de_novo]

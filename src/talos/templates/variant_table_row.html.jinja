@@ -39,7 +39,7 @@
     <td>
         {# Gene symbol #}
         {% for gene in variant.genes %}
-        <a href="https://panelapp.agha.umccr.org/panels/entities/{{gene[1]}}" target="_blank">{{gene[1]}}</a>
+        <a href="https://panelapp-aus.org//panels/entities/{{gene[1]}}" target="_blank">{{gene[1]}}</a>
         {% endfor %}
         {% if variant.new_in_base_panel %}
         <i class="bi bi-star-fill text-warning" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -82,12 +82,12 @@
     </td>
     <td>
         {% if variant.var_type == 'SmallVariant' %}
-            gnomAD WGS: <a
-                href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r3"
+            AC: <a
+                href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r4"
                 target="_blank">{{variant.var_data.info.gnomad_ac}}</a><br>
-            gnomAD WES: <a
-                href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r2_1"
-                target="_blank">{{variant.var_data.info.gnomad_ex_ac}}</a>
+            AF: <a
+                href="https://gnomad.broadinstitute.org/variant/{{variant}}?dataset=gnomad_r4"
+                target="_blank">{{variant.var_data.info.gnomad_af | round(4)}}</a><br>
         {% elif (variant.var_type == 'StructuralVariant') and (variant.var_data.info.gnomad_key) %}
             gnomAD v2.1: <a
                 href="https://gnomad.broadinstitute.org/variant/{{variant.var_data.info.gnomad_key}}?dataset=gnomad_sv_r2_1"

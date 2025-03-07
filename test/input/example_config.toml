@@ -1,7 +1,7 @@
 [GeneratePanelData]
 default_panel = 137
 forced_panels = [99]
-panelapp = 'https://panelapp.agha.umccr.org/api/v1/panels'
+panelapp = 'https://panelapp-aus.org/api/v1/panels'
 panel_month_delta = 12
 require_pheno_match = ['FLG', 'GJB2']
 within_x_months = 6

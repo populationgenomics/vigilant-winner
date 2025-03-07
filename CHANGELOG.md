@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Renamed `vcf_to_mt` to `VcfToMt`
 * The 'extended PED' file format is no longer used - instead we use a normal 6-col PED file, and a separate file with
   phenotypic data and external IDs for each participant in a GA4GH-compliant Cohort/Phenopacket format
-  * An adapter remains in [talos/CPG](src/talos/CPG/convert_ePED_to_phenopackets.py) to convert the old format to the new format
+  * An adapter remains in [talos/CPG](src/talos/ConvertPedToPhenopackets.py) to convert the old format to the new format
 
 ### Deprecated
 

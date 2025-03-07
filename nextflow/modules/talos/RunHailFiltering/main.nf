@@ -6,7 +6,7 @@ process RunHailFiltering {
     publishDir params.output_dir, mode: 'copy'
 
     input:
-        path matrix_table
+        path mt_tar
         path panelapp_data
         path pedigree
         path clinvar
@@ -29,12 +29,12 @@ process RunHailFiltering {
     export TALOS_CONFIG=${talos_config}
 
     tar -zxf ${clinvar}
-    tar -zxf ${matrix_table}
+    tar -zxf ${mt_tar}
     tar -zxf ${svdb}
     tar -zxf ${exomiser}
 
     RunHailFiltering \
-        --input ${params.cohort}_small_variants.mt \
+        --input ${params.cohort}.mt \
         --panelapp ${panelapp_data} \
         --pedigree ${pedigree} \
         --output ${params.cohort}_small_variants_labelled.vcf.bgz \
